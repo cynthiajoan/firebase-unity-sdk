@@ -220,6 +220,7 @@ namespace Firebase.Sample.FirebaseAI
         InternalTestUrlContextMixedValidity,
         InternalTestUsageMetadataWithCaching,
         InternalTestRealtimeInputConfigSerialization,
+        InternalTestSpeechMetadataSerialization,
       };
 
       // Create the set of tests, combining the above lists.
@@ -2272,6 +2273,26 @@ namespace Firebase.Sample.FirebaseAI
         caughtOverflowTimeSpan = true;
       }
       Assert("Should throw on overflowing prefix TimeSpan", caughtOverflowTimeSpan);
+
+      return Task.CompletedTask;
+    }
+
+    Task InternalTestSpeechMetadataSerialization()
+    {
+      var speechMeta = new SpeechMetadata(speaker: "Alice", style: "cheerful");
+      var textPart = new ModelContent.TextPart("Welcome to Firebase AI Logic.", speechMeta);
+      var content = new ModelContent("user", new ModelContent.Part[] { textPart });
+      var json = content.ToJson();
+
+      var roundTrip = ModelContent.FromJson(json);
+      AssertEq("roundTrip.Role", roundTrip.Role, "user");
+      AssertEq("roundTrip.Parts.Count", roundTrip.Parts.Count, 1);
+
+      var parsedPart = (ModelContent.TextPart)roundTrip.Parts.First();
+      AssertEq("parsedPart.Text", parsedPart.Text, "Welcome to Firebase AI Logic.");
+      Assert("parsedPart.SpeechMetadata should have value", parsedPart.SpeechMetadata.HasValue);
+      AssertEq("parsedPart.SpeechMetadata.Speaker", parsedPart.SpeechMetadata.Value.Speaker, "Alice");
+      AssertEq("parsedPart.SpeechMetadata.Style", parsedPart.SpeechMetadata.Value.Style, "cheerful");
 
       return Task.CompletedTask;
     }

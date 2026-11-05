@@ -184,10 +184,14 @@ namespace Firebase.AI
       /// <summary>
       /// Intended for internal use only.
       /// </summary>
-      internal TextPart(string text, bool? isThought, string thoughtSignature)
+      internal TextPart(
+          string text,
+          bool? isThought,
+          string thoughtSignature,
+          SpeechMetadata? speechMetadata = null)
       {
         Text = text;
-        SpeechMetadata = null;
+        SpeechMetadata = speechMetadata;
         _isThought = isThought;
         _thoughtSignature = thoughtSignature;
       }
@@ -646,7 +650,9 @@ namespace Firebase.AI
       string thoughtSignature = jsonDict.ParseValue<string>("thoughtSignature");
       if (jsonDict.TryParseValue("text", out string text))
       {
-        return new TextPart(text, isThought, thoughtSignature);
+        SpeechMetadata? speechMetadata = jsonDict.ParseNullableObject(
+            "speechMetadata", SpeechMetadata.FromJson);
+        return new TextPart(text, isThought, thoughtSignature, speechMetadata);
       }
       else if (jsonDict.TryParseObject("functionCall",
           innerDict => ModelContentJsonParsers.FunctionCallPartFromJson(innerDict, isThought, thoughtSignature),

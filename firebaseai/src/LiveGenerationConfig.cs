@@ -232,6 +232,13 @@ namespace Firebase.AI
       dict.AddIfHasValue("style", Style);
       return dict;
     }
+
+    internal static SpeechMetadata FromJson(Dictionary<string, object> jsonDict)
+    {
+      return new SpeechMetadata(
+        speaker: jsonDict.ParseValue<string>("speaker"),
+        style: jsonDict.ParseValue<string>("style"));
+    }
   }
 
   /// <summary>
